@@ -116,7 +116,8 @@ $(document).ready(function() {
     },
   });
 
-  //Actually Run in Python
+  //run python interpreter on the code
+  // and pycee to check for help on errors
   $("#run").click(function() {
     $.post('/run_code', {
       text: editor.getValue()
@@ -126,8 +127,15 @@ $(document).ready(function() {
     }, 'json');
 
     function print_result(data) {
+      // This will set the result from the python interpreter and
+      // the result from pycee help into the correct text fields
+
       document.getElementById('output').innerHTML = '';
-      $("#output").append("<pre>" + data + "</pre>");
+      $("#output").append(data.python);
+
+      document.getElementById('pycee_text').innerHTML = '';
+      console.log(data.pycee);
+      $("#pycee_text").append(data.pycee);
     }
   });
   var exampleCode = function(id, text) {

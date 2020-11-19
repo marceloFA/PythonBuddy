@@ -22,78 +22,105 @@ def is_os_linux():
         return False
     return True
 
+
 # Configure Flask App
 # Remember to change the SECRET_KEY!
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-app.config['DEBUG'] = True
+app.config["SECRET_KEY"] = "secret!"
+app.config["DEBUG"] = True
 socketio = SocketIO(app)
 
 # Get number of cores for multiprocessing
 num_cores = cpu_count()
 
-@app.route('/')
+
+@app.route("/")
 def index():
     """Display home page
-        :return: index.html
+    :return: index.html
 
-        Initializes session variables for tracking time between running code.
+    Initializes session variables for tracking time between running code.
     """
     session["count"] = 0
     session["time_now"] = datetime.now()
     return render_template("index.html")
 
 
-@app.route('/check_code', methods=['POST'])
+@app.route("/check_code", methods=["POST"])
 def check_code():
     """Run pylint on code and get output
-        :return: JSON object of pylint errors
+    :return: JSON object of pylint errors
+        {
             {
-                {
-                    "code":...,
-                    "error": ...,
-                    "message": ...,
-                    "line": ...,
-                    "error_info": ...,
-                }
-                ...
+                "code":...,
+                "error": ...,
+                "message": ...,
+                "line": ...,
+                "error_info": ...,
             }
+            ...
+        }
 
-        For more customization, please look at Pylint's library code:
-        https://github.com/PyCQA/pylint/blob/master/pylint/lint.py
+    For more customization, please look at Pylint's library code:
+    https://github.com/PyCQA/pylint/blob/master/pylint/lint.py
     """
     # Session to handle multiple users at one time and to get textarea from AJAX call
-    session["code"] = request.form['text']
+    session["code"] = request.form["text"]
     text = session["code"]
     output = evaluate_pylint(text)
 
     # MANAGER.astroid_cache.clear()
     return jsonify(output)
 
+
 # Run python in secure system
-@app.route('/run_code', methods=['POST'])
+@app.route("/run_code", methods=["POST"])
 def run_code():
     """Run python 3 code
-        :return: JSON object of python 3 output
-            {
-                ...
-            }
+    :return: JSON object of python 3 output
+        {
+            ...
+        }
     """
     # Don't run too many times
     if slow():
-        return jsonify("Running code too much within a short time period. Please wait a few seconds before clicking \"Run\" each time.")
+        return jsonify(
+            'Running code too much within a short time period. Please wait a few seconds before clicking "Run" each time.'
+        )
     session["time_now"] = datetime.now()
 
-    output = None
     if not "file_name" in session:
         with tempfile.NamedTemporaryFile(delete=False) as temp:
             session["file_name"] = temp.name
-    cmd = 'python ' + session["file_name"]
-    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE,
-              stderr=STDOUT, close_fds=True)
-    output = p.stdout.read()
 
-    return jsonify(output.decode('utf-8'))
+    output = {}
+
+    # Get python output
+    p1 = Popen(
+        "python " + session["file_name"],
+        shell=True,
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=STDOUT,
+        close_fds=True,
+    )
+    output['python'] = p1.stdout.read().decode("utf-8")
+    p1.terminate()
+
+    # Get pycee help
+    p2 = Popen(
+        "pycee " + session["file_name"],
+        shell=True,
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=STDOUT,
+        close_fds=True,
+    )
+    output['pycee'] = p2.stdout.read().decode("utf-8")
+    p2.terminate()
+
+    return jsonify(output or None)
+
 
 # Slow down if user clicks "Run" too many times
 def slow():
@@ -102,6 +129,7 @@ def slow():
     if float(session["count"]) / float(time.total_seconds()) > 5:
         return True
     return False
+
 
 def evaluate_pylint(text):
     """Create temp files for pylint parsing on user code
@@ -136,7 +164,8 @@ def evaluate_pylint(text):
     try:
         ARGS = " -r n --disable=R,C"
         (pylint_stdout, pylint_stderr) = lint.py_run(
-            session["file_name"] + ARGS, return_std=True)
+            session["file_name"] + ARGS, return_std=True
+        )
     except Exception as e:
         raise Exception(e)
 
@@ -144,6 +173,7 @@ def evaluate_pylint(text):
         raise Exception("Issue with pylint configuration")
 
     return format_errors(pylint_stdout.getvalue())
+
 
 # def split_error_gen(error):
 #     """Inspired by this Python discussion: https://bugs.python.org/issue17343
@@ -155,18 +185,19 @@ def evaluate_pylint(text):
 #     for e in error.split():
 #         yield e
 
+
 def process_error(error):
     """Formats error message into dictionary
 
-        :param error: pylint error full text
-        :return: dictionary of error as:
-            {
-                "code":...,
-                "error": ...,
-                "message": ...,
-                "line": ...,
-                "error_info": ...,
-            }
+    :param error: pylint error full text
+    :return: dictionary of error as:
+        {
+            "code":...,
+            "error": ...,
+            "message": ...,
+            "line": ...,
+            "error_info": ...,
+        }
     """
     # Return None if not an error or warning
     if error == " " or error is None:
@@ -207,7 +238,7 @@ def process_error(error):
             message_yet = True
             continue
         if message_yet:
-            full_message = ' '.join(list_words[i:length - 1])
+            full_message = " ".join(list_words[i : length - 1])
             break
         i += 1
 
@@ -220,6 +251,7 @@ def process_error(error):
         "line": line_num,
         "error_info": error_info,
     }
+
 
 def format_errors(pylint_text):
     """Format errors into parsable nested dictionary
@@ -240,8 +272,12 @@ def format_errors(pylint_text):
     errors_list = pylint_text.splitlines(True)
 
     # If there is not an error, return nothing
-    if "--------------------------------------------------------------------" in errors_list[1] and \
-            "Your code has been rated at" in errors_list[2] and "module" not in errors_list[0]:
+    if (
+        "--------------------------------------------------------------------"
+        in errors_list[1]
+        and "Your code has been rated at" in errors_list[2]
+        and "module" not in errors_list[0]
+    ):
         return None
 
     errors_list.pop(0)
@@ -260,6 +296,7 @@ def format_errors(pylint_text):
     #     pylint_dict[count]=process_error(error)
     #     count +=1
     return pylint_dict
+
 
 # def find_error(id):
 #     """Find relevant info about pylint error
@@ -288,10 +325,12 @@ def format_errors(pylint_text):
 #
 #     return "No information at the moment"
 
+
 def remove_temp_code_file():
     os.remove(session["file_name"])
 
-@socketio.on('disconnect', namespace='/check_disconnect')
+
+@socketio.on("disconnect", namespace="/check_disconnect")
 def disconnect():
     """Remove temp file associated with current session"""
     remove_temp_code_file()
