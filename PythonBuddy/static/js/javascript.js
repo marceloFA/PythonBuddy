@@ -130,12 +130,14 @@ $(document).ready(function() {
       // This will set the result from the python interpreter and
       // the result from pycee help into the correct text fields
 
-      document.getElementById('output').innerHTML = '';
-      $("#output").append(data.python);
+      document.getElementById('stdout').innerHTML = '';
+      $("#stdout").append(data.stdout);
+
+      document.getElementById('so_text').innerHTML = '';
+      $("#so_text").append(data.so_answer);
 
       document.getElementById('pycee_text').innerHTML = '';
-      console.log(data.pycee);
-      $("#pycee_text").append(data.pycee);
+      $("#pycee_text").append(data.pycee_answer);
     }
   });
   var exampleCode = function(id, text) {

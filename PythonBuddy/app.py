@@ -6,15 +6,24 @@ Uses Python 3 now
 v2.1.0 created on 5/10/19
 Improve efficiency and design
  """
-from .pylint_errors import pylint_dict_final
+from datetime import datetime
+from subprocess import Popen, PIPE, STDOUT
+from multiprocessing import Pool, cpu_count
+
 from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO
 import eventlet.wsgi
-import tempfile, mmap, os, re
-from datetime import datetime
 from pylint import epylint as lint
-from subprocess import Popen, PIPE, STDOUT
-from multiprocessing import Pool, cpu_count
+import tempfile, mmap, os, re
+
+# Pycee
+from pycee.answers import get_answers
+from pycee.errors import handle_error
+from pycee.inspection import get_error_info, get_packages
+from pycee.sym_table import get_offending_line
+from pycee.utils import create_argparser
+
+from .pylint_errors import pylint_dict_final
 
 
 def is_os_linux():
@@ -93,33 +102,32 @@ def run_code():
         with tempfile.NamedTemporaryFile(delete=False) as temp:
             session["file_name"] = temp.name
 
-    output = {}
-
     # Get python output
     p1 = Popen(
         "python " + session["file_name"],
         shell=True,
         stdin=PIPE,
         stdout=PIPE,
-        stderr=STDOUT,
+        stderr=PIPE,
         close_fds=True,
     )
-    output['python'] = p1.stdout.read().decode("utf-8")
-    p1.terminate()
 
-    # Get pycee help
-    p2 = Popen(
-        "pycee " + session["file_name"],
-        shell=True,
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=STDOUT,
-        close_fds=True,
+    stdout = p1.stdout.read().decode("utf-8")
+    stderr = p1.stderr.read().decode("utf-8")
+    p1.kill()
+
+    so_answer = None
+    pycee_answer = None
+    if stderr:
+        so_answers, pycee_answer = pycee(session["file_name"], stderr=stderr)
+
+    return jsonify(
+        {
+            "stdout": stdout,
+            "so_answer": so_answers,
+            "pycee_answer": pycee_answer,
+        }
     )
-    output['pycee'] = p2.stdout.read().decode("utf-8")
-    p2.terminate()
-
-    return jsonify(output or None)
 
 
 # Slow down if user clicks "Run" too many times
@@ -129,6 +137,20 @@ def slow():
     if float(session["count"]) / float(time.total_seconds()) > 5:
         return True
     return False
+
+
+def pycee(file_path, stderr, n_answers=3):
+    """ run pycee to get a possible answer for the error """
+
+    error_info = get_error_info(file_path, stderr)
+    offending_line = get_offending_line(error_info)
+    packages = get_packages(error_info["code"])
+    query, pycee_answer, _ = handle_error(
+        error_info, offending_line, packages, limit=n_answers
+    )
+    so_answers = get_answers(query, error_info["traceback"], offending_line)
+
+    return so_answers, pycee_answer
 
 
 def evaluate_pylint(text):
