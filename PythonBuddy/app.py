@@ -21,7 +21,6 @@ from pycee.answers import get_answers
 from pycee.errors import handle_error
 from pycee.inspection import get_error_info, get_packages
 from pycee.sym_table import get_offending_line
-from pycee.utils import create_argparser
 
 from .pylint_errors import pylint_dict_final
 
@@ -116,15 +115,20 @@ def run_code():
     stderr = p1.stderr.read().decode("utf-8")
     p1.kill()
 
-    so_answer = None
+    answers_info = None
+    summarized_answers = None
     pycee_answer = None
+    
     if stderr:
-        so_answers, pycee_answer = pycee(session["file_name"], stderr=stderr)
+        summarized_answers, answers_info, pycee_answer = pycee(
+            session["file_name"], stderr=stderr
+        )
 
     return jsonify(
         {
-            "stdout": stdout,
-            "so_answer": so_answers,
+            "output": stderr + stdout,
+            "summarized_answers": summarized_answers,
+            "answers_info": [a._asdict() for a in answers_info] if answers_info else None,
             "pycee_answer": pycee_answer,
         }
     )
@@ -139,18 +143,24 @@ def slow():
     return False
 
 
-def pycee(file_path, stderr, n_answers=3):
+def pycee(file_path, stderr, n_questions=3, n_answers=3):
     """ run pycee to get a possible answer for the error """
 
     error_info = get_error_info(file_path, stderr)
     offending_line = get_offending_line(error_info)
     packages = get_packages(error_info["code"])
     query, pycee_answer, _ = handle_error(
-        error_info, offending_line, packages, limit=n_answers
+        error_info, offending_line, packages, limit=n_questions
     )
-    so_answers = get_answers(query, error_info["traceback"], offending_line)
+    summarized_answers, answers_info = get_answers(
+        query,
+        error_info["traceback"],
+        offending_line,
+        error_info["message"],
+        n_answers=n_answers,
+    )
 
-    return so_answers, pycee_answer
+    return summarized_answers, answers_info, pycee_answer
 
 
 def evaluate_pylint(text):

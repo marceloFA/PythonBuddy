@@ -4,13 +4,18 @@
 <head>
     <!-- Meta Data -->
     <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0"/>
-    <meta name="description" content="Online Python Editor With Live Syntax Checking">
+    <meta name="description" content="Python Interpreter with syntax checking and error help">
     <meta name="keywords" content="Lint,Online,Editor,Python,Syntax-Checking">
     <meta name="author" content="Ethan Chiu">
-    <title>PythonBuddy</title>
+    <title>PythonBuddy + Pycee</title>
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+    <!-- UIkit CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.5.12/dist/css/uikit.min.css" />
+    <!-- UIkit JS -->
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.12/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.12/dist/js/uikit-icons.min.js"></script>
     <!-- Scripts -->
     <script src="/static/js/jquery.js" type="text/javascript"></script>
     <script src="/static/codemirror/lib/codemirror.js"></script>
@@ -25,64 +30,48 @@
     <script src="/static/js/socket.io/2.1.1/socket.io.js"></script>
     <!-- Require.js -->
     <script src="/static/js/require.js/2.3.5/require.min.js"></script>
-    <!--Style -->
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css">
+    <!-- Custom Style -->
     <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="/static/codemirror/lib/lint.css">
     <link rel="stylesheet" href="/static/codemirror/addon/dialog.css">
-    <link rel="stylesheet" href="/static/css/style.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
-    <a href="https://github.com/ethanchewy/PythonBuddy"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
-    <div class="text-center" id="info">
-        <h1>Python Linter Online</h1> <i>Live Syntax Checking Using Pylint while Running Python </i>
-        <p> Examples: <a href="#" id="codeexample1">1</a> <a href="#" id="codeexample2">2</a> <a href="#" id="codeexample3">3</a> <a href="#" id="codeexample4">4</a> <a href="#" id="codeexample5">5</a> <a href="#" id="codeexample6">6</a> <a href="#" id="codeexample7">7</a> </p>
+<div id="content" class="uk-section">        
+    <!-- Head Text -->
+    <div class="uk-container uk-margin-medium uk-text-center" id="heading">
+        <h1 class="uk-heading-bullet uk-margin-small">Python Buddy + Pycee</h1>
+        <h4 class="uk-text-light uk-margin-small">Code editor with syntax checker and error assistant included</h4>        
     </div>
-    <br>
-    <div class="container">
-        <textarea id="txt">
-def foo(bar, baz):
-    pass
-foo(42)
-        </textarea>
-        <br>
-        <button type="button" id="run" class="btn btn-success">Run</button>
-        <br>
-        <br>
-        <div id="stdout"> <pre></pre> </div>
-        <br>
-        <div id="append_text">
-            <h2>Pylint Output Info</h2>
-            <table id="errorslist" class="table" style="display: inline-block;">
-                <tr>
-                    <th>Line</th>
-                    <th>Severity</th>
-                    <th>Error</th>
-                    <th>Tips</th>
-                    <th>Error Code</th>
-                    <th>Error Info</th>
-                </tr>
-            </table>
-        </div>
-        <!-- StackOverflow Answer -->
-        <div id="stackoverflow_answer">
-            <h2>StackOverflow Help</h2>
-            <p id='so_text'></p>
-        </div>
-        <!-- Pycee Answer -->
-        <div id="pycee_answer">
-            <h2>Pycee Help</h2>
-            <p id='pycee_text'></p>
-        </div>
+    <!-- code input -->
+    <div class="uk-container uk-margin-small">
+        <textarea id="text-editor"></textarea>
+        <!-- Examples and run buttons-->
+        <p class="uk-align-right uk-margin-small" uk-margin>
+            <button id="run" class="uk-button uk-button-deafult uk-text-bold">Run</button>
+            {% include 'index/examples_button.html' %}
+        </p>
+    </div>
+    <!-- Code output -->
+    <div class="uk-container uk-margin-medium" id="code-output"><pre></pre></div>
+    <!-- Linter output -->
+    {% include 'index/linter_output.html' %}
+    <!-- Stackoverlow and pycee answers for an error are appended with javascript below -->
 
+    
+</div>
+
+<footer class="uk-margin-top" uk-sticky>
+    <div class="uk-container uk-padding-small">
+        <p class="uk-text-small uk-align-center">
+            Created by <a href="https://github.com/ethanchewy" target="_blank">Ethan Chiu</a> </br>
+            Extended by <a href="https://github.com/marcelofa" target="_blank">Marcelo Freitas</a> 
+            and <a href="https://github.com/LeonardoFurtado" target="_blank">Leonardo Furtado</a>
+        </p>
     </div>
-    <br>
-    <footer>
-        Created by <a href="https://github.com/ethanchewy">Ethan Chiu</a> </br>
-        Extended by <a href="https://github.com/marcelofa">Marcelo Freitas</a> 
-        and <a href="https://github.com/LeonardoFurtado">Leonardo Furtado</a>
-    </footer>
+</footer>
+
 </body>
 <script src="/static/js/javascript.js" type="text/javascript"></script>
 

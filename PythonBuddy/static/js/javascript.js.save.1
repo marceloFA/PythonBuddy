@@ -124,11 +124,11 @@ $(document).ready(function() {
     $.post('/run_code', {
       text: editor.getValue()
     }, function(data) {
-
+      
       // clean answers
       cleanAnswers();
       // build new answers
-      buildSOAnswers(data.answers_info, data.summarized_answers);
+      buildSOAnswers(data.so_answers);
       buildPyceeAnswer(data.pycee_answer);
       printOutput(data.output);
       return false;
@@ -140,44 +140,60 @@ $(document).ready(function() {
       $('#pycee-answer').remove();
     }
 
-    function buildSOAnswers(answers_info, summarized_answers){
+    function buildSOAnswers(answers){
       // build an accordion for answers
       // each accordion consists of a card component
-      if(!answers_info) return;
+      if(!answers) return;
       
       //base div
       var soAnswersBaseDiv = `<div id="stackoverflow-answers" class="uk-container uk-margin-large uk-animation-fade">`+
       `<h3>StackOverflow Help</h3>`+
-      `<ul id="so-answers-list" uk-accordion="collapsible: false"></ul></div>`;
+      `<ul id="so-answers-list" uk-accordion></ul></div>`;
+      
       $('#content').append(soAnswersBaseDiv);
-
       // each card list item:
-      for (i=0, len=answers_info.length; i<len; i++) {
+      for (i=0, len=answers.length; i<len; i++) {
         
         var answerCard = `<div class="uk-container uk-card uk-card-default uk-width-1-2@m">`+
           `<div class="uk-card-header">`+
             `<div class="uk-grid-small uk-flex-middle" uk-grid>`+
                 `<div class="uk-width-auto">`+
-                    `<img class="uk-border-circle" width="40" height="40" src="${answers_info[i].profile_image}">`+
+                    `<img class="uk-border-circle" width="40" height="40" src="${answers[i].profile_url}">`+
                 `</div>`+
                 `<div class="uk-width-expand">`+
-                    `<h3 class="uk-card-title uk-margin-remove-bottom">Answer ${i+1}</h3>`+
-                    `<div class="uk-card-badge uk-label">Score: ${answers_info[i].score}</div>`+
-                    `<p class="uk-text-meta uk-margin-remove-top">${answers_info[i].author}</p>`+
+                    `<h3 class="uk-card-title uk-margin-remove-bottom">Answer${i+1}</h3>`+
+                    `<p class="uk-text-meta uk-margin-remove-top">${answers[i].author}</p>`+
                 `</div>`+
             `</div>`+
           `</div>`+
-        `<div class="uk-card-body"><p>${summarized_answers[i]}</p></div>`+
+        `<div class="uk-card-body"><p>${answers[i].body}</p></div>`+
         `<div class="uk-card-footer">`+
-            `<a href="https://www.stackoverflow.com/a/${answers_info[i].id}" target="_blank" class="uk-button uk-button-text">`+
-              `See original post on StackOverflow`+
-            `</a>`+
+            `<a href="${answers[i].id}" class="uk-button uk-button-text">See original post on StackOverflow</a>`+
         `</div>`+
       `</div>`;
 
         $('#so-answers-list').append(
           `<li><a class="uk-accordion-title" href="#">Answer ${i+1}</a>`+
-          `<div class="uk-accordion-content">${answerCard}</div></li>`
+          `<div class="uk-accordion-content"><p>${answers[i]}</p></div></li>`
+        );
+      }
+    }
+
+    function oldbuildSOAnswers(answers){
+      // build an accordion for answers
+      // each accordion consists of a card component
+      if(!answers) return;
+      //base div
+      var soAnswersBaseDiv = `<div id="stackoverflow-answers" class="uk-container uk-margin-large uk-animation-fade">`+
+      `<h3>StackOverflow Help</h3>`+
+      `<ul id="so-answers-list" uk-accordion></ul></div>`;
+      $('#content').append(soAnswersBaseDiv);
+      // list items:
+      for (i=0, len=answers.length; i<len; i++) {
+        console.log(`items ${i}`);
+        $('#so-answers-list').append(
+          `<li><a class="uk-accordion-title" href="#">Answer ${i+1}</a>`+
+          `<div class="uk-accordion-content"><p>${answers[i]}</p></div></li>`
         );
       }
     }

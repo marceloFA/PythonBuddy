@@ -1,25 +1,42 @@
 body{
 	background-color: #428bca !important;
     font-family: 'Inconsolata',sans-serif;
-    color:white !important;
 }
 
-.cm-s-default {
-	-webkit-box-shadow: 5px 5px 20px 8px rgba(62,132,189,1);
-	-moz-box-shadow: 5px 5px 20px 8px rgba(62,132,189,1);
-	box-shadow: 5px 5px 20px 8px rgba(62,132,189,1);
-
+h1, h2, h3, h4{
+    color:white;
 }
 
-button{
-    font-size: 20px !important;
+
+/* Code output */
+pre{
+    color: #666666;
 }
-a{
-	color:white;
+
+
+/* Linter table */
+#examples-button, #linter-table, #linter-table th{
+    color: white;
 }
-#run:hover{
-	-webkit-filter: grayscale(100%);
-   -moz-filter: grayscale(100%);
-   -ms-filter: grayscale(100%);
-   filter: grayscale(100%);
+
+#linter table, #linter-table th{
+    font-weight: bold;
+}
+
+
+/* Stackoverflow answers accordion */
+.uk-accordion-title, .uk-accordion-title:active, .uk-accordion-title:focus, .uk-accordion-title::before{
+    color: white;
+    display: contents;
+}
+
+/* Pycee answer */
+#pycee-answer * {
+    color: white;
+}
+
+
+/* Footer */
+footer, footer a{
+    color:white;
 }
