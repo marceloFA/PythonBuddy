@@ -1,6 +1,11 @@
+html{
+    height: 100%;
+}
+
 body{
 	background-color: #428bca !important;
     font-family: 'Inconsolata',sans-serif;
+    min-height: 100%;
 }
 
 h1, h2, h3, h4{
@@ -10,7 +15,7 @@ h1, h2, h3, h4{
 
 /* Code output */
 pre{
-    color: #666666;
+    color: #666666 !important;
 }
 
 
