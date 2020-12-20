@@ -45,7 +45,7 @@
         <h4 class="uk-text-light uk-margin-small">Code editor with syntax checker and error assistant included</h4>        
     </div>
     <!-- code input -->
-    <div class="uk-container uk-margin-small">
+    <div class="uk-container uk-margin-small" id="codemirror">
         <textarea id="text-editor"></textarea>
         <!-- Examples and run buttons-->
         <p class="uk-align-right uk-margin-small" uk-margin>
@@ -58,16 +58,13 @@
         <h3>Code output</h3>
         <pre></pre>
     </div>
-    <!-- Linter output -->
+    <!-- Linter output is loaded via ajax (see javascript.js)-->
     <!-- Stackoverlow output -->
     <!-- Pycee hint -->
-
-    
 </div>
-
-<footer class="uk-margin-top" uk-sticky>
-    <div class="uk-container uk-padding-small">
-        <p class="uk-text-small uk-align-center">
+<footer id="page-footer">
+    <div class="uk-container uk-padding-small uk-text-center">
+        <p class="uk-text-small">
             Created by <a href="https://github.com/ethanchewy" target="_blank">Ethan Chiu</a> </br>
             Extended by <a href="https://github.com/marcelofa" target="_blank">Marcelo Freitas</a> 
             and <a href="https://github.com/LeonardoFurtado" target="_blank">Leonardo Furtado</a>

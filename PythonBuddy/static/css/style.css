@@ -43,5 +43,13 @@ pre{
 
 /* Footer */
 footer, footer a{
-    color:white;
+    color: white;
+}
+
+#content{
+    min-height: calc(100vh - 70px);
+}
+
+footer{
+    height: 70px;
 }
