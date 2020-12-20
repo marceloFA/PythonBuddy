@@ -20,6 +20,8 @@ import tempfile, mmap, os, re
 from pycee.answers import get_so_answers
 from pycee.errors import handle_error
 from pycee.inspection import get_error_info
+from pycee.utils import parse_args
+
 
 from .pylint_errors import pylint_dict_final
 
@@ -49,7 +51,7 @@ def index():
     Initializes session variables for tracking time between running code.
     """
     session["count"] = 0
-    session["time_now"] = datetime.now()
+    session["last_run_time"] = datetime.now()
     return render_template("index.html")
 
 
@@ -91,10 +93,8 @@ def run_code():
     """
     # Don't run too many times
     if slow():
-        return jsonify(
-            'Running code too much within a short time period. Please wait a few seconds before clicking "Run" each time.'
-        )
-    session["time_now"] = datetime.now()
+        return jsonify({"alertUserAboutCooldown": True})
+    session["last_run_time"] = datetime.now()
 
     if not "file_name" in session:
         with tempfile.NamedTemporaryFile(delete=False) as temp:
@@ -125,34 +125,32 @@ def run_code():
 
     return jsonify(
         {
-            "output": stderr + stdout,
+            "output": stdout + stderr,
             "answers_info": [a._asdict() for a in answers_info] if answers_info else None,
             "pycee_answer": pycee_answer,
         }
     )
 
 
-# Slow down if user clicks "Run" too many times
 def slow():
+    """ Slow down if user clicks "Run" too many times """
     session["count"] += 1
-    time = datetime.now() - session["time_now"]
-    if float(session["count"]) / float(time.total_seconds()) > 5:
-        return True
-    return False
+    time = datetime.now() - session["last_run_time"]
+    return time.total_seconds() < 5
+    
 
 
 def pycee(file_path, stderr, n_questions=3, n_answers=3):
     """ run pycee to get a possible answer for the error """
-
-    error_info = get_error_info(file_path, stderr)
-    query, pycee_answer, _ = handle_error(
-        error_info, n_questions=n_questions
-    )
-    _, answers_info = get_so_answers(
-        query,
-        error_info,
-        n_answers=n_answers,
-    )
+    
+    args = parse_args([
+        file_path,
+        "-q", str(n_questions),
+        "-a", str(n_answers)
+    ])
+    error_info = get_error_info(args.file_name)
+    query, pycee_answer, _ = handle_error(error_info, args)
+    _, answers_info = get_answers(query, error_info, args)
 
     return answers_info, pycee_answer
 

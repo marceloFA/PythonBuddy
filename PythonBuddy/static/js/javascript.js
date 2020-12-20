@@ -24,8 +24,13 @@ function runCode() {
 
   $.post('/run_code', { text: editor.getValue()}, function(data){
 
+    if (data["alertUserAboutCooldown"]){
+      alert("Please wait a few seconds before submitting new code to run 😜");
+      return false;
+    }
+    
     // clear output from last run
-    $('#so-answers-list').remove();
+    $('#stackoverflow-answers').remove();
     $('#pycee-answer').remove();
     
     // debugging
@@ -41,6 +46,7 @@ function runCode() {
 
 }
 
+
 function checkSyntax(code, result_cb) {
   /* Coordinate syntax check  */
 
@@ -53,6 +59,8 @@ function checkSyntax(code, result_cb) {
     // Check if pylint output is empty.
     if (data != null) 
       error_list = buildLinterTable(data, error_list);
+    else 
+      $('#linter-output').remove();
     
     // not sure what this does yet
     result_cb(error_list);
@@ -91,6 +99,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById("text-editor"), {
 
 /* Functions to build UI elements according to results from backend */
 
+
 function exampleCode(id, text) {
   /* fill examples into the editor */
   $(id).click(function(e) {
@@ -125,7 +134,8 @@ function buildLinterTable(data, error_list){
     `</table>`+
   `</div>`;
   
-  $('#content').append(linterTableBaseDiv);
+  $(linterTableBaseDiv).insertAfter("#code-output");
+
 
   var data_length = Object.keys(data).length;
   
@@ -184,11 +194,18 @@ function buildSOAnswers(answers_info){
   //base div
   var soAnswersBaseDiv = `<div id="stackoverflow-answers" class="uk-container uk-margin-large uk-animation-fade">`+
   `<h3>StackOverflow help</h3>`+
-  `<ul id="so-answers-list" uk-accordion="collapsible: false"></ul></div>`;
+  `<ul id="so-answers-list" uk-accordion></ul></div>`;
+
   $('#content').append(soAnswersBaseDiv);
 
   // each card list item:
   for (i=0, len=answers_info.length; i<len; i++) {
+
+    // LongAnswer badge
+    var isLongAnswer = answers_info[i].body.length > 1000;
+    var longAnswerLabel = isLongAnswer ? `<span class="uk-label uk-label-warning">Long answer</span>` : ``;
+    // first answer is always open unless its a long one
+    var openItemClass = (i==0 && !isLongAnswer) ? "uk-open" : "";
     
     var answerCard = `<div class="uk-container uk-card uk-card-default uk-width-1-2@m">`+
       `<div class="uk-card-header">`+
@@ -212,8 +229,11 @@ function buildSOAnswers(answers_info){
   `</div>`;
 
     $('#so-answers-list').append(
-      `<li><a class="uk-accordion-title" href="#">Answer ${i+1}</a>`+
-      `<div class="uk-accordion-content">${answerCard}</div></li>`
+      `<li class="${openItemClass}">`+
+      `<a class="uk-accordion-title" href="#">Answer ${i+1}  </a>`+
+      longAnswerLabel+
+      `<div class="uk-accordion-content">${answerCard}</div>`+
+      `</li>`
     );
   }
 };
