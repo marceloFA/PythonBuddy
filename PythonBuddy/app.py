@@ -17,10 +17,11 @@ from pylint import epylint as lint
 import tempfile, mmap, os, re
 
 # Pycee
-from pycee.answers import get_answers
+from pycee.answers import get_so_answers
 from pycee.errors import handle_error
 from pycee.inspection import get_error_info
 from pycee.utils import parse_args
+
 
 from .pylint_errors import pylint_dict_final
 
@@ -141,7 +142,7 @@ def slow():
 
 def pycee(file_path, stderr, n_questions=3, n_answers=3):
     """ run pycee to get a possible answer for the error """
-
+    
     args = parse_args([
         file_path,
         "-q", str(n_questions),

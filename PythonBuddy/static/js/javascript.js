@@ -99,6 +99,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById("text-editor"), {
 
 /* Functions to build UI elements according to results from backend */
 
+
 function exampleCode(id, text) {
   /* fill examples into the editor */
   $(id).click(function(e) {
@@ -134,6 +135,7 @@ function buildLinterTable(data, error_list){
   `</div>`;
   
   $(linterTableBaseDiv).insertAfter("#code-output");
+
 
   var data_length = Object.keys(data).length;
   
@@ -193,6 +195,7 @@ function buildSOAnswers(answers_info){
   var soAnswersBaseDiv = `<div id="stackoverflow-answers" class="uk-container uk-margin-large uk-animation-fade">`+
   `<h3>StackOverflow help</h3>`+
   `<ul id="so-answers-list" uk-accordion></ul></div>`;
+
   $('#content').append(soAnswersBaseDiv);
 
   // each card list item:
