@@ -17,7 +17,7 @@ from pylint import epylint as lint
 import tempfile, mmap, os, re
 
 # Pycee
-from pycee.answers import get_so_answers
+from pycee.answers import get_answers
 from pycee.errors import handle_error
 from pycee.inspection import get_error_info
 from pycee.utils import parse_args
