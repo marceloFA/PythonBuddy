@@ -12,7 +12,7 @@ Jinja2==2.11.2
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
-pycee2==0.1
+git+git://github.com/marcelofa/pycee2@master # pycee from source to be updated with latest changes
 pylint==2.6.0
 python-engineio==3.13.2
 python-socketio==4.6.0

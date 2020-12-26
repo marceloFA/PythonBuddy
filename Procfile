@@ -1,1 +1,1 @@
-web: gunicorn PythonBuddy.app --log-file -
+web: gunicorn PythonBuddy.app:app --preload --log-file -
