@@ -111,8 +111,9 @@ function exampleCode(id, text) {
 
 function printOutput(output) {
   /* Print code output */
-  document.getElementById('code-output').innerHTML = '';
-  $("#code-output").append(`<pre>${output}</pre>`);
+  document.getElementById('code-output').innerHTML = ''; 
+  let outputTitle = "<h3>Code output</h3>";
+  $("#code-output").append(outputTitle + `<pre>${output}</pre>`);
 };
 
 function buildLinterTable(data, error_list){

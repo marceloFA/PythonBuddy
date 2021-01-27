@@ -138,7 +138,7 @@ def slow():
     
     # don't check it on a users that has just loaded the page
     if session['count'] == 1: return False
-    
+
     time = datetime.now() - session["last_run_time"]
     return time.total_seconds() < 5
     
@@ -354,14 +354,14 @@ def format_errors(pylint_text):
 #     return "No information at the moment"
 
 
-def remove_temp_code_file():
-    os.remove(session["file_name"])
-
-
 @socketio.on("disconnect", namespace="/check_disconnect")
 def disconnect():
     """Remove temp file associated with current session"""
-    remove_temp_code_file()
+    
+    try:
+        os.remove(session["file_name"])
+    except FileNotFoundError:
+        pass
 
 
 if __name__ == "__main__":
