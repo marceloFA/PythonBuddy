@@ -27,7 +27,7 @@ from .pylint_errors import pylint_dict_final
 
 
 def is_os_linux():
-    return os.name == "nt"
+    return os.name != "nt"
 
 
 # Configure Flask App
@@ -84,18 +84,13 @@ def check_code():
 # Run python in secure system
 @app.route("/run_code", methods=["POST"])
 def run_code():
-    """Run python 3 code
-    :return: JSON object of python 3 output
-        {
-            ...
-        }
-    """
+    """ Run python 3 code """
 
     session['count'] += 1
+
     # Don't run too many times
-    if slow():
+    if slow(session["last_run_time"], session['count']):
         return jsonify({"alertUserAboutCooldown": True})
-    session["last_run_time"] = datetime.now()
 
     if not "file_name" in session:
         with tempfile.NamedTemporaryFile(delete=False) as temp:
@@ -114,6 +109,7 @@ def run_code():
     stdout = p1.stdout.read().decode("utf-8")
     stderr = p1.stderr.read().decode("utf-8")
     p1.kill()
+    session["last_run_time"] = datetime.now()
 
     answers_info = None
     summarized_answers = None
@@ -133,14 +129,13 @@ def run_code():
     )
 
 
-def slow():
-    """ Slow down if user clicks "Run" too many times """
-    
-    # don't check it on a users that has just loaded the page
-    if session['count'] == 1: return False
+def slow(last_run_time, run_count):
+    """ Set a 5 second interval to run code again.
+    Also, don't check right after page load by checking run_count """
 
-    time = datetime.now() - session["last_run_time"]
-    return time.total_seconds() < 5
+
+    timedelta = datetime.now() - last_run_time
+    return timedelta.total_seconds() < 5 and run_count > 2
     
 
 
@@ -353,15 +348,18 @@ def format_errors(pylint_text):
 #
 #     return "No information at the moment"
 
-
-@socketio.on("disconnect", namespace="/check_disconnect")
-def disconnect():
-    """Remove temp file associated with current session"""
-    
+def remove_temp_code_file():
     try:
         os.remove(session["file_name"])
     except FileNotFoundError:
         pass
+
+
+@socketio.on("disconnect", namespace="/check_disconnect")
+def disconnect():
+    """Remove temp file associated with current session"""
+    remove_temp_code_file()
+
 
 
 if __name__ == "__main__":
