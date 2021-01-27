@@ -27,9 +27,7 @@ from .pylint_errors import pylint_dict_final
 
 
 def is_os_linux():
-    if os.name == "nt":
-        return False
-    return True
+    return os.name == "nt"
 
 
 # Configure Flask App
@@ -52,6 +50,7 @@ def index():
     """
     session["count"] = 0
     session["last_run_time"] = datetime.now()
+
     return render_template("index.html")
 
 
@@ -91,6 +90,8 @@ def run_code():
             ...
         }
     """
+
+    session['count'] += 1
     # Don't run too many times
     if slow():
         return jsonify({"alertUserAboutCooldown": True})
@@ -134,7 +135,10 @@ def run_code():
 
 def slow():
     """ Slow down if user clicks "Run" too many times """
-    session["count"] += 1
+    
+    # don't check it on a users that has just loaded the page
+    if session['count'] == 1: return False
+    
     time = datetime.now() - session["last_run_time"]
     return time.total_seconds() < 5
     
